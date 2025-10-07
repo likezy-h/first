@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="srx\mian.cpp">
+    <ClCompile Include="src\mian.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
