@@ -13,8 +13,10 @@ int main(int, char**) {
 		return 1;
 	}
 
+	// shaped Window是恒特殊的window
+	// 你要用去问问ai
 	//SDL创建窗口
-	SDL_Window* window = SDL_CreateShapedWindow("Congratulate ,you find me!", 100, 100, 800, 600, SDL_WINDOW_SHOWN);
+	SDL_Window* window = SDL_CreateWindow("Congratulate ,you find me!", 100, 100, 800, 600, SDL_WINDOW_SHOWN);
 	//SDL创建渲染器
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	
