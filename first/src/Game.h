@@ -33,7 +33,7 @@ public:
 	}
 
 	void handleEvent(SDL_Event* event);
-	void update();
+	void update(float deltaTime);
 	void render();
 
 private:
@@ -41,6 +41,10 @@ private:
 	//禁止拷贝构造和转换构造
 	Game(const Game&) = delete;
 	Game& operator=(const Game&) = delete;
+
+	Uint32 frameTime;
+	int FPS = 60;
+	float deltaTime;
 
 	int windowWidth = 600;
 	int windowHeight = 800;
