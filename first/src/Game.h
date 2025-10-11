@@ -1,7 +1,12 @@
 #pragma once
-#include <SDL2/SDL.h>
+#include <iostream>
+
 #include "Scene.h"
-#include<SDL2/SDL_image.h>
+#include "SDL2/SDL.h"
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
+#include "Object.h"
+
 
 class Game
 {
@@ -12,38 +17,35 @@ public:
 	}
 
 	~Game();
-
 	void run();
 	void init();
-    void clean();
+	void clean();
 	void changeScene(Scene* scene);
-	
-	//Getter
+
+	// Getter
 	SDL_Window* getWindow() { return window; }
 	SDL_Renderer* getRenderer() { return renderer; }
 	int getWindowWidth() { return windowWidth; }
 	int getWindowHeight() { return windowHeight; }
 
-	//Setter
-	void setWindowWidth(int width) {
-		windowWidth = width;
-	}
-	void setWindowHeight(int height) {
-		windowHeight = height;
-	}
+	// Setter
+	void setWindowWidth(int width) { windowWidth = width; }
+	void setWindowHeight(int height) { windowHeight = height; }
 
 	void handleEvent(SDL_Event* event);
 	void update(float deltaTime);
 	void render();
 
+	void backgroundUpdate(float deltaTime);
+	void renderBackground();
 private:
 	Game();
-	//禁止拷贝构造和转换构造
+	// 禁止拷贝构造和转换构造。
 	Game(const Game&) = delete;
 	Game& operator=(const Game&) = delete;
 
-	Uint32 frameTime;
-	int FPS = 60;
+	Uint32 frameTime; // 我们希望的帧时间
+	int FPS = 60; // 
 	float deltaTime;
 
 	int windowWidth = 600;
@@ -53,7 +55,9 @@ private:
 	SDL_Renderer* renderer = nullptr;
 
 	bool isRunning = true;
-	Scene* currentScene=nullptr;
+	Scene* currentScene = nullptr;
 
+	Background nearStars;  // 近处的星星
+	Background farStars;   // 远处的星星
 };
 
