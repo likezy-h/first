@@ -1,5 +1,8 @@
 // SceneMain.cpp
 #include "SceneMain.h"
+#include "SceneTitle.h"
+#include "SceneEnd.h"
+#include "Game.h"
 #include <cmath>
 
 SceneMain::SceneMain() : game(Game::getInstance())
@@ -20,6 +23,9 @@ void SceneMain::update(float deltaTime)
 	updateItems(deltaTime);
 	updateExplosions(deltaTime);
 	updatePlayer(deltaTime);
+	if (isDead) {
+		changeSceneDelayed(deltaTime, 3); // 3秒后切换到结束场景
+	}
 }
 
 void SceneMain::render()
@@ -88,9 +94,9 @@ void SceneMain::init()
 
 	// 初始化爆炸动画模板
 	explosionTemplate.texture = IMG_LoadTexture(game.getRenderer(), "assets/effect/explosion.png");
-	SDL_QueryTexture(explosionTemplate.texture, NULL, NULL, &explosionTemplate.width, &explosionTemplate.heith);
-	explosionTemplate.tolarFrame = explosionTemplate.width / explosionTemplate.heith;
-	explosionTemplate.width = explosionTemplate.heith;
+	SDL_QueryTexture(explosionTemplate.texture, NULL, NULL, &explosionTemplate.width, &explosionTemplate.height);
+	explosionTemplate.totlaFrame = explosionTemplate.width / explosionTemplate.height;
+	explosionTemplate.width = explosionTemplate.height;
 
 	// 初始化物品模板
 	itemLifeTemplate.texture = IMG_LoadTexture(game.getRenderer(), "assets/image/bonus_life.png");
@@ -471,9 +477,17 @@ void SceneMain::updatePlayer(float deltaTime)
 	}
 
 	if (player.currentHealth <= 0) {
-		// 玩家死亡处理
+		// 游戏结束逻辑
+		auto currentTime = SDL_GetTicks();
 		isDead = true;
+		auto explosion = new Explosion(explosionTemplate);
+		explosion->position.x = player.position.x + player.width / 2 - explosion->width / 2;
+		explosion->position.y = player.position.y + player.height / 2 - explosion->height / 2;
+		explosion->startTime = currentTime;
+		explosions.push_back(explosion);
 		Mix_PlayChannel(-1, sounds["player_explode"], 0);
+		game.setFinalScore(score);
+		return;
 	}
 
 	for (auto enemy : enemies) {
@@ -503,7 +517,7 @@ void SceneMain::enemyExplode(Enemy* enemy)
 	auto currentTime = SDL_GetTicks();
 	auto explosion = new Explosion(explosionTemplate);
 	explosion->position.x = enemy->position.x + enemy->width / 2 - explosion->width / 2;
-	explosion->position.y = enemy->position.y + enemy->height / 2 - explosion->heith / 2;
+	explosion->position.y = enemy->position.y + enemy->height / 2 - explosion->height / 2;
 	explosion->startTime = currentTime;
 	explosions.push_back(explosion);
 
@@ -525,7 +539,7 @@ void SceneMain::updateExplosions(float)
 		// 根据时间差和帧率计算当前帧索引
 		explosion->currentFrame = (currentTime - explosion->startTime) * explosion->FPS / 1000;
 		// 检查动画是否播放完毕
-		if (explosion->currentFrame >= explosion->tolarFrame) {
+		if (explosion->currentFrame >= explosion->totlaFrame) {
 			delete explosion;
 			it = explosions.erase(it);
 		}
@@ -540,13 +554,13 @@ void SceneMain::renderExplosions()
 	for (auto explosion : explosions)
 	{
 		// 定义源矩形（精灵图上的区域）
-		SDL_Rect src = { explosion->currentFrame * explosion->width, 0, explosion->width, explosion->heith };
+		SDL_Rect src = { explosion->currentFrame * explosion->width, 0, explosion->width, explosion->height };
 		// 定义目标矩形（屏幕上的位置）
 		SDL_Rect dst = {
 			static_cast<int>(explosion->position.x),
 			static_cast<int>(explosion->position.y),
 			explosion->width,
-			explosion->heith,
+			explosion->height
 		};
 		// 绘制当前帧
 		SDL_RenderCopy(game.getRenderer(), explosion->texture, &src, &dst);
@@ -686,4 +700,13 @@ void SceneMain::renderUI()
 	SDL_RenderCopy(game.getRenderer(), texture, NULL, &rect);
 	SDL_FreeSurface(surface);
 	SDL_DestroyTexture(texture);
+}
+
+void SceneMain::changeSceneDelayed(float deltaTime, float delay)
+{
+	timerEnd += deltaTime;
+	if (timerEnd > delay) {
+		auto sceneEnd = new SceneEnd();
+		game.changeScene(sceneEnd);
+	}
 }

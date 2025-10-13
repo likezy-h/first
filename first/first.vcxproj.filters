@@ -27,6 +27,12 @@
     <ClInclude Include="src\Object.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\SceneEnd.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SceneTitle.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -36,6 +42,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\SceneMain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneEnd.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneTitle.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scene.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

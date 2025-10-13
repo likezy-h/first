@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "SceneMain.h"
+#include "SceneTitle.h"
 
 Game::Game()
 {
@@ -102,7 +103,15 @@ void Game::init()
 		isRunning = false;
 	}
 
-	currentScene = new SceneMain();
+	// 载入字体
+	titleFont = TTF_OpenFont("assets/font/VonwaonBitmap-16px.ttf", 64);
+	textFont = TTF_OpenFont("assets/font/VonwaonBitmap-16px.ttf", 32);
+	if (titleFont == nullptr || textFont == nullptr) {
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "TTF_OpenFont: %s\n", TTF_GetError());
+		isRunning = false;
+	}
+
+	currentScene = new SceneTitle();
 	currentScene->init();
 
 }
@@ -210,4 +219,38 @@ void Game::renderBackground()
 		}
 	}
 
+}
+
+
+SDL_Point Game::renderTextCentered(std::string text, float posY, bool isTitle)
+{
+	SDL_Color color = { 255, 255, 255, 255 };
+	SDL_Surface* surface;
+	if (isTitle) {
+		surface = TTF_RenderUTF8_Solid(titleFont, text.c_str(), color);
+	}
+	else {
+		surface = TTF_RenderUTF8_Solid(textFont, text.c_str(), color);
+	}
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+	int y = static_cast<int>((getWindowHeight() - surface->h) * posY);
+	SDL_Rect rect = { getWindowWidth() / 2 - surface->w / 2,
+					 y,
+					 surface->w,
+					 surface->h };
+	SDL_RenderCopy(renderer, texture, NULL, &rect);
+	SDL_DestroyTexture(texture);
+	SDL_FreeSurface(surface);
+	return { rect.x + rect.w, y };  // 返回文本末尾的坐标
+}
+
+void Game::renderTextPos(std::string text, int posX, int posY)
+{
+	SDL_Color color = { 255, 255, 255, 255 };
+	SDL_Surface* surface = TTF_RenderUTF8_Solid(textFont, text.c_str(), color);
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_Rect rect = { posX, posY, surface->w, surface->h };
+	SDL_RenderCopy(renderer, texture, NULL, &rect);
+	SDL_DestroyTexture(texture);
+	SDL_FreeSurface(surface);
 }

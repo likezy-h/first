@@ -82,4 +82,7 @@ private:
 
 	TTF_Font* scoreFont;
 	int score = 0;
+
+	float timerEnd = 0.0f;
+	void changeSceneDelayed(float deltaTime, float delay);
 };
