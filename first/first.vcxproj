@@ -131,6 +131,8 @@
     <ClInclude Include="src\SceneTitle.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\scene.cpp" />
+    <ClCompile Include="src\SceneEnd.cpp" />
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\scene.cpp" />

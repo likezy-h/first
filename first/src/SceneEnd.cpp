@@ -16,8 +16,8 @@ void SceneEnd::init()
         SDL_StartTextInput();
     }
     if (!SDL_IsTextInputActive()) {
-        SDL_LogError(SDL_LOG_PRIORITY_ERROR, "Failed to start text input: %s", SDL_GetError());
     }
+
 }
 
 void SceneEnd::update(float deltaTime)
@@ -50,7 +50,7 @@ void SceneEnd::clean()
     if (bgm != nullptr) {
         Mix_HaltMusic();
         Mix_FreeMusic(bgm);
-    }
+}
 
 }
 
@@ -62,25 +62,17 @@ void SceneEnd::handleEvent(SDL_Event* event)
         }
         if (event->type == SDL_KEYDOWN) {
             if (event->key.keysym.scancode == SDL_SCANCODE_RETURN) {
-                isTyping = false; // 切换状态
                 SDL_StopTextInput();
                 if (name == "") {
                     name = "无名氏"; // 如果玩家没有输入名字，使用默认名字
-                }
+            }
                 game.insertLeaderBoard(game.getFinalScore(), name); // 将玩家分数插入排行榜
             }
             if (event->key.keysym.scancode == SDL_SCANCODE_BACKSPACE) {
-                removeLastUTF8Char(name);
             }
         }
     }
     else {
-        if (event->type == SDL_KEYDOWN) {
-            if (event->key.keysym.scancode == SDL_SCANCODE_J) {
-                auto sceneMain = new SceneMain(); // 创建新的主游戏场景
-                game.changeScene(sceneMain); // 切换回主游戏场景
-            }
-        }
     }
 }
 

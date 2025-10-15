@@ -107,18 +107,7 @@ void Game::init()
 		isRunning = false;
 	}
 
-	// 载入字体
-	titleFont = TTF_OpenFont("assets/font/VonwaonBitmap-16px.ttf", 64);
-	textFont = TTF_OpenFont("assets/font/VonwaonBitmap-16px.ttf", 32);
-	if (titleFont == nullptr || textFont == nullptr) {
-		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "TTF_OpenFont: %s\n", TTF_GetError());
-		isRunning = false;
-	}
-
-	// 载入得分
-	loadData();
-
-	currentScene = new SceneTitle();
+	currentScene = new SceneMain();
 	currentScene->init();
 
 }
@@ -278,50 +267,4 @@ void Game::renderTextPos(std::string text, int posX, int posY, bool isLeft)
 	SDL_FreeSurface(surface);
 }
 
-void Game::renderTextPos(std::string text, int posX, int posY)
-{
-	SDL_Color color = { 255, 255, 255, 255 };
-	SDL_Surface* surface = TTF_RenderUTF8_Solid(textFont, text.c_str(), color);
-	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-	SDL_Rect rect = { posX, posY, surface->w, surface->h };
-	SDL_RenderCopy(renderer, texture, NULL, &rect);
-	SDL_DestroyTexture(texture);
-	SDL_FreeSurface(surface);
-}
-
-void Game::insertLeaderBoard(int score, std::string name)
-{
-	leaderBoard.insert({ score, name });
-	if (leaderBoard.size() > 8) {
-		leaderBoard.erase(--leaderBoard.end());
-	}
-}
-
-void Game::saveData()
-{
-	// 保存得分榜的数据
-	std::ofstream file("assets/save.dat");
-	if (!file.is_open()) {
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to open save file");
-		return;
-	}
-	for (const auto& entry : leaderBoard) {
-		file << entry.first << " " << entry.second << std::endl;
-	}
-}
-
-void Game::loadData()
-{
-	// 加载得分榜的数据
-	std::ifstream file("assets/save.dat");
-	if (!file.is_open()) {
-		SDL_Log("Failed to open save file");
-		return;
-	}
-	leaderBoard.clear();
-	int score;
-	std::string name;
-	while (file >> score >> name) {
-		leaderBoard.insert({ score, name });
-	}
 }
