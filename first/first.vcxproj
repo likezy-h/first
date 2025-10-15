@@ -126,12 +126,17 @@
     <ClInclude Include="src\Game.h" />
     <ClInclude Include="src\Object.h" />
     <ClInclude Include="src\Scene.h" />
+    <ClInclude Include="src\SceneEnd.h" />
     <ClInclude Include="src\SceneMain.h" />
+    <ClInclude Include="src\SceneTitle.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\scene.cpp" />
+    <ClCompile Include="src\SceneEnd.cpp" />
     <ClCompile Include="src\SceneMain.cpp" />
+    <ClCompile Include="src\SceneTitle.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "SceneMain.h"
+#include "SceneTitle.h"
 
 Game::Game()
 {
@@ -8,6 +9,7 @@ Game::Game()
 Game::~Game()
 {
 
+	saveData(); // Save data before closing
 	clean();
 
 }
@@ -55,11 +57,14 @@ void Game::init()
 		isRunning = false;
 	}
 
+	// 创建渲染器
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	if (!renderer) {
-		std::cerr << "SDL Create rendere Error:" << SDL_GetError();
+	if (renderer == nullptr) {
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
 		isRunning = false;
 	}
+	// 设置逻辑分辨率
+	SDL_RenderSetLogicalSize(renderer, windowWidth, windowHeight);
 
 	if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
 		std::cerr << "SDL_image Init Error:" << SDL_GetError();
@@ -102,7 +107,18 @@ void Game::init()
 		isRunning = false;
 	}
 
-	currentScene = new SceneMain();
+	// 载入字体
+	titleFont = TTF_OpenFont("assets/font/VonwaonBitmap-16px.ttf", 64);
+	textFont = TTF_OpenFont("assets/font/VonwaonBitmap-16px.ttf", 32);
+	if (titleFont == nullptr || textFont == nullptr) {
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "TTF_OpenFont: %s\n", TTF_GetError());
+		isRunning = false;
+	}
+
+	// 载入得分
+	loadData();
+
+	currentScene = new SceneTitle();
 	currentScene->init();
 
 }
@@ -141,17 +157,27 @@ void Game::changeScene(Scene* scene)
 
 }
 
-void Game::handleEvent(SDL_Event* event) {
-
-	if (SDL_PollEvent(event)) {
-		if (event->type == SDL_QUIT) {
+void Game::handleEvent(SDL_Event* event)
+{
+	while (SDL_PollEvent(event))
+	{
+		if (event->type == SDL_QUIT)
+		{
 			isRunning = false;
 		}
-
+		if (event->type == SDL_KEYDOWN) {
+			if (event->key.keysym.scancode == SDL_SCANCODE_F4) {
+				isFullscreen = !isFullscreen;
+				if (isFullscreen) {
+					SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+				}
+				else {
+					SDL_SetWindowFullscreen(window, 0);
+				}
+			}
+		}
 		currentScene->handleEvent(event);
-
 	}
-
 }
 
 void Game::update(float deltaTime) {
@@ -210,4 +236,92 @@ void Game::renderBackground()
 		}
 	}
 
+}
+
+
+SDL_Point Game::renderTextCentered(std::string text, float posY, bool isTitle)
+{
+	SDL_Color color = { 255, 255, 255, 255 };
+	SDL_Surface* surface;
+	if (isTitle) {
+		surface = TTF_RenderUTF8_Solid(titleFont, text.c_str(), color);
+	}
+	else {
+		surface = TTF_RenderUTF8_Solid(textFont, text.c_str(), color);
+	}
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+	int y = static_cast<int>((getWindowHeight() - surface->h) * posY);
+	SDL_Rect rect = { getWindowWidth() / 2 - surface->w / 2,
+					 y,
+					 surface->w,
+					 surface->h };
+	SDL_RenderCopy(renderer, texture, NULL, &rect);
+	SDL_DestroyTexture(texture);
+	SDL_FreeSurface(surface);
+	return { rect.x + rect.w, y };  // 返回文本末尾的坐标
+}
+
+void Game::renderTextPos(std::string text, int posX, int posY, bool isLeft)
+{
+	SDL_Color color = { 255, 255, 255, 255 };
+	SDL_Surface* surface = TTF_RenderUTF8_Solid(textFont, text.c_str(), color);
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_Rect rect;
+	if (isLeft) {
+		rect = { posX, posY, surface->w, surface->h };
+	}
+	else {
+		rect = { getWindowWidth() - posX - surface->w, posY, surface->w, surface->h };
+	}
+	SDL_RenderCopy(renderer, texture, NULL, &rect);
+	SDL_DestroyTexture(texture);
+	SDL_FreeSurface(surface);
+}
+
+void Game::renderTextPos(std::string text, int posX, int posY)
+{
+	SDL_Color color = { 255, 255, 255, 255 };
+	SDL_Surface* surface = TTF_RenderUTF8_Solid(textFont, text.c_str(), color);
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_Rect rect = { posX, posY, surface->w, surface->h };
+	SDL_RenderCopy(renderer, texture, NULL, &rect);
+	SDL_DestroyTexture(texture);
+	SDL_FreeSurface(surface);
+}
+
+void Game::insertLeaderBoard(int score, std::string name)
+{
+	leaderBoard.insert({ score, name });
+	if (leaderBoard.size() > 8) {
+		leaderBoard.erase(--leaderBoard.end());
+	}
+}
+
+void Game::saveData()
+{
+	// 保存得分榜的数据
+	std::ofstream file("assets/save.dat");
+	if (!file.is_open()) {
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to open save file");
+		return;
+	}
+	for (const auto& entry : leaderBoard) {
+		file << entry.first << " " << entry.second << std::endl;
+	}
+}
+
+void Game::loadData()
+{
+	// 加载得分榜的数据
+	std::ifstream file("assets/save.dat");
+	if (!file.is_open()) {
+		SDL_Log("Failed to open save file");
+		return;
+	}
+	leaderBoard.clear();
+	int score;
+	std::string name;
+	while (file >> score >> name) {
+		leaderBoard.insert({ score, name });
+	}
 }
